@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Game</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --border-color: #0f3460;
+      --accent: #e94560;
+      --text-primary: #eaeaea;
+      --text-secondary: #a0a0a0;
+      --player-red: #e94560;
+      --player-blue: #4ecca3;
+      --player-green: #ffd369;
+      --player-purple: #9b59b6;
+      --player-orange: #e67e22;
+      --player-cyan: #00bcd4;
+      --font-header: Georgia, serif;
+      --font-mono: 'Courier New', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #start-screen h1 {
+      font-family: var(--font-header);
+      font-size: 3.5rem;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+
+    #start-screen p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: .9rem;
+    }
+
+    #player-count-selector {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 2rem;
+    }
+
+    .player-btn {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .player-btn:hover {
+      border-color: var(--accent);
+      background: rgba(233, 69, 96, 0.1);
+    }
+
+    .player-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #start-btn {
+      padding: 0.8rem 2.5rem;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-family: var(--font-header);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #start-btn:hover {
+      background: #d6304a;
+    }
+
+    #game-container {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #top-bar {
+      height: 52px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 2rem;
+    }
+
+    #top-bar .phase-indicator {
+      font-family: var(--font-header);
+      font-size: .9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    #top-bar .turn-counter {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    #top-bar .current-player {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #top-bar .player-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    #map-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #game-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-map .territory {
+      fill: var(--bg-secondary);
+      stroke: var(--border-color);
+      stroke-width: 1.5;
+      cursor: pointer;
+      transition: fill 0.3s, filter 0.2s;
+    }
+
+    #game-map .territory:hover {
+      filter: brightness(1.3);
+    }
+
+    #game-map .territory.selected {
+      stroke-width: 2.5;
+      animation: pulse-border 1s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { stroke-opacity: 1; }
+      50% { stroke-opacity: 0.5; }
+    }
+
+    #game-map .territory.attack-target {
+      stroke: var(--accent);
+      stroke-dasharray: 5,3;
+      stroke-width: 2;
+    }
+
+    #game-map .territory.fortify-target {
+      stroke: var(--player-cyan);
+      stroke-dasharray: 5,3;
+      stroke-width: 2;
+    }
+
+    #tooltip {
+      position: fixed;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+      pointer-events: none;
+      display: none;
+      z-index: 100;
+    }
+
+    #tooltip .tooltip-name {
+      font-family: var(--font-header);
+      margin-bottom: 0.25rem;
+    }
+
+    #tooltip .tooltip-info {
+      color: var(--text-secondary);
+    }
+
+    #sidebar {
+      position: fixed;
+      right: 0;
+      top: 52px;
+      bottom: 0;
+      width: 280px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #sidebar h3 {
+      font-family: var(--font-header);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    #player-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .player-entry {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+    }
+
+    .player-entry.eliminated {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .player-entry.current-turn {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .player-entry .color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .player-entry .player-name {
+      flex: 1;
+    }
+
+    .player-entry .player-stats {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    #phase-actions {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    #phase-actions .armies-to-place {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    #phase-actions .armies-to-place span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    #end-phase-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background: var(--border-color);
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #end-phase-btn:hover {
+      background: #1a4a7a;
+    }
+
+    #combat-log {
+      padding: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    #combat-log .log-entry {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    #combat-log .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    #dice-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+    }
+
+    #dice-modal.active {
+      display: flex;
+    }
+
+    #dice-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 2rem;
+      min-width: 320px;
+      text-align: center;
+    }
+
+    #dice-content h3 {
+      font-family: var(--font-header);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    .dice-row {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .dice-row .label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.4rem;
+    }
+
+    .dice-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .dice-box .dice {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .die {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .die.winner {
+      border-color: var(--player-green);
+      color: var(--player-green);
+    }
+
+    .die.loser {
+      border-color: var(--accent);
+      color: var(--accent);
+      opacity: 0.6;
+    }
+
+    .dice-result {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    #dice-result-text {
+      margin-top: .5rem;
+      font-size: 0.9rem;
+    }
+
+    #fortify-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+    }
+
+    #fortify-modal.active {
+      display: flex;
+    }
+
+    #fortify-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      min-width: 300px;
+    }
+
+    #fortify-content h3 {
+      font-family: var(--font-header);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    #fortify-content .fortify-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    #fortify-content .territory-label {
+      font-size: 0.85rem;
+      min-width: 80px;
+    }
+
+    #fortify-content select {
+      flex: 1;
+      padding: 0.4rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    #fortify-content input[type="range"] {
+      flex: 1;
+    }
+
+    #fortify-content .slider-value {
+      min-width: 30px;
+      text-align: right;
+    }
+
+    #fortify-content .fortify-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    #fortify-content button {
+      flex: 1;
+      padding: 0.5rem;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    #fortify-content #confirm-fortify {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #fortify-content #cancel-fortify {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    #game-over-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #game-over-modal.active {
+      display: flex;
+    }
+
+    #game-over-content {
+      text-align: center;
+    }
+
+    #game-over-content h2 {
+      font-family: var(--font-header);
+      font-size: 3rem;
+      letter-spacing: 0.3em;
+      margin-bottom: 1rem;
+    }
+
+    #game-over-content.victory h2 {
+      color: var(--player-green);
+    }
+
+    #game-over-content.defeat h2 {
+      color: var(--accent);
+    }
+
+    #game-over-content p {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    #play-again-btn {
+      padding: 0.8rem 2rem;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-family: var(--font-header);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+    }
+
+    #play-again-btn:hover {
+      background: #d6304a;
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen">
+    <h1>Risk</h1>
+    <p>Select number of players</p>
+    <div id="player-count-selector">
+      <button class="player-btn" data-count="2">2</button>
+      <button class="player-btn" data-count="3">3</button>
+      <button class="player-btn" data-count="4">4</button>
+      <button class="player-btn" data-count="5">5</button>
+      <button class="player-btn" data-count="6">6</button>
+    </div>
+    <button id="start-btn">Start Game</button>
+  </div>
+
+  <div id="game-container">
+    <div id="top-bar">
+      <div class="phase-indicator">Reinforce</div>
+      <div class="turn-counter">Turn 1</div>
+      <div class="current-player">
+        <div class="player-color-dot"></div>
+        <span class="player-name">Player 1</span>
+      </div>
+    </div>
+    <div id="map-container">
+      <svg id="game-map"></svg>
+    </div>
+    <div id="tooltip">
+      <div class="tooltip-name">Territory</div>
+      <div class="tooltip-info">Armies: <span id="tooltip-armies">0</span></div>
+    </div>
+    <div id="sidebar">
+      <h3>Players</h3>
+      <div id="player-list"></div>
+      <div id="phase-actions">
+        <div class="armies-to-place">Armies to place: <span id="armies-remaining">0</span></div>
+        <button id="end-phase-btn">End Reinforce</button>
+      </div>
+      <h3>Combat Log</h3>
+      <div id="combat-log"></div>
+    </div>
+  </div>
+
+  <div id="dice-modal">
+    <div id="dice-content">
+      <h3>Battle!</h3>
+      <div class="dice-row">
+        <div class="dice-box">
+          <div class="label">Attacker</div>
+          <div class="dice" id="attacker-dice"></div>
+        </div>
+        <div class="dice-box">
+          <div class="label">Defender</div>
+          <div class="dice" id="defender-dice"></div>
+        </div>
+      </div>
+      <div class="dice-result">
+        <div id="dice-result-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fortify-modal">
+    <div id="fortify-content">
+      <h3>Fortify</h3>
+      <div class="fortify-row">
+        <span class="territory-label">From:</span>
+        <select id="fortify-source"></select>
+      </div>
+      <div class="fortify-row">
+        <span class="territory-label">To:</span>
+        <select id="fortify-dest"></select>
+      </div>
+      <div class="fortify-row">
+        <span class="territory-label">Armies:</span>
+        <input type="range" id="fortify-slider" min="0" max="0" value="0">
+        <span class="slider-value" id="fortify-value">0</span>
+      </div>
+      <div class="fortify-actions">
+        <button id="confirm-fortify">Move</button>
+        <button id="cancel-fortify">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-over-modal">
+    <div id="game-over-content">
+      <h2 id="game-over-title">VICTORY</h2>
+      <p id="game-over-text">You conquered the world!</p>
+      <button id="play-again-btn">Play Again</button>
+    </div>
+  </div>
+  <script>
+    // === MAP DATA ===
+const CONTINENTS = {
+  north_america: { name: 'North America', bonus: 5 },
+  south_america: { name: 'South America', bonus: 2 },
+  europe: { name: 'Europe', bonus: 5 },
+  africa: { name: 'Africa', bonus: 3 },
+  asia: { name: 'Asia', bonus: 7 },
+  oceania: { name: 'Oceania', bonus: 2 }
+};
+
+const PLAYER_COLORS = ['#e94560', '#4ecca3', '#ffd369', '#9b59b6', '#e67e22', '#00bcd4'];
+const PLAYER_NAMES = ['Red', 'Blue', 'Green', 'Purple', 'Orange', 'Cyan'];
+
+// Territory definitions with SVG path data
+const TERRITORIES = {
+  // North America (8 territories)
+  alaska: { name: 'Alaska', continent: 'north_america', adjacent: ['kamchatka', 'northwest_territory', 'alberta'], path: 'M80,60 L120,50 L140,80 L130,120 L90,110 Z' },
+  northwest_territory: { name: 'Northwest Territory', continent: 'north_america', adjacent: ['alaska', 'alberta', 'greenland'], path: 'M140,80 L180,60 L200,100 L180,140 L130,120 Z' },
+  greenland: { name: 'Greenland', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'iceland'], path: 'M280,20 L340,30 L350,80 L300,100 L260,70 Z' },
+  alberta: { name: 'Alberta', continent: 'north_america', adjacent: ['alaska', 'northwest_territory', 'ontario', 'western_us'], path: 'M130,120 L180,140 L190,180 L150,190 L110,170 Z' },
+  ontario: { name: 'Ontario', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'alberta', 'eastern_us', 'quebec'], path: 'M180,140 L240,130 L250,180 L220,210 L150,190 Z' },
+  quebec: { name: 'Quebec', continent: 'north_america', adjacent: ['northwest_territory', 'greenland', 'ontario'], path: 'M240,130 L300,100 L310,160 L260,190 L250,180 Z' },
+  western_us: { name: 'Western US', continent: 'north_america', adjacent: ['alberta', 'ontario', 'eastern_us', 'central_america'], path: 'M110,170 L150,190 L160,240 L120,250 L80,230 Z' },
+  eastern_us: { name: 'Eastern US', continent: 'north_america', adjacent: ['ontario', 'western_us', 'central_america', 'quebec'], path: 'M150,190 L220,210 L230,260 L180,270 L160,240 Z' },
+  central_america: { name: 'Central America', continent: 'north_america', adjacent: ['western_us', 'eastern_us', 'venezuela'], path: 'M120,250 L180,270 L190,310 L150,320 L100,290 Z' },
+
+  // South America (4 territories)
+  venezuela: { name: 'Venezuela', continent: 'south_america', adjacent: ['central_america', 'peru', 'brazil'], path: 'M190,310 L240,300 L250,350 L210,370 L160,340 Z' },
+  peru: { name: 'Peru', continent: 'south_america', adjacent: ['venezuela', 'brazil', 'argentina'], path: 'M210,370 L250,350 L260,410 L220,430 L180,400 Z' },
+  brazil: { name: 'Brazil', continent: 'south_america', adjacent: ['venezuela', 'peru', 'argentina'], path: 'M250,350 L310,340 L320,400 L280,430 L260,410 Z' },
+  argentina: { name: 'Argentina', continent: 'south_america', adjacent: ['peru', 'brazil'], path: 'M220,430 L280,430 L270,490 L230,480 Z' },
+
+  // Europe (7 territories)
+  iceland: { name: 'Iceland', continent: 'europe', adjacent: ['greenland', 'scandinavia', 'great_britain'], path: 'M340,60 L380,55 L390,90 L350,100 Z' },
+  scandinavia: { name: 'Scandinavia', continent: 'europe', adjacent: ['iceland', 'ukraine', 'great_britain', 'northern_europe'], path: 'M420,60 L470,50 L480,100 L450,130 L400,110 Z' },
+  ukraine: { name: 'Ukraine', continent: 'europe', adjacent: ['scandinavia', 'northern_europe', 'southern_europe', 'middle_east'], path: 'M450,130 L520,120 L530,170 L480,180 L450,160 Z' },
+  great_britain: { name: 'Great Britain', continent: 'europe', adjacent: ['iceland', 'scandinavia', 'western_europe', 'northern_europe'], path: 'M340,100 L380,95 L385,130 L350,140 Z' },
+  western_europe: { name: 'Western Europe', continent: 'europe', adjacent: ['great_britain', 'northern_europe', 'southern_europe'], path: 'M340,140 L380,135 L385,180 L350,190 Z' },
+  northern_europe: { name: 'Northern Europe', continent: 'europe', adjacent: ['scandinavia', 'ukraine', 'great_britain', 'western_europe', 'southern_europe'], path: 'M380,95 L450,130 L440,170 L400,175 L385,130 Z' },
+  southern_europe: { name: 'Southern Europe', continent: 'europe', adjacent: ['ukraine', 'northern_europe', 'western_europe', 'north_africa', 'middle_east'], path: 'M400,175 L480,180 L470,220 L420,225 L385,180 Z' },
+
+  // Africa (6 territories)
+  north_africa: { name: 'North Africa', continent: 'africa', adjacent: ['southern_europe', 'egypt', 'east_africa', 'central_africa', 'western_europe'], path: 'M350,220 L420,225 L430,280 L380,300 L320,270 Z' },
+  egypt: { name: 'Egypt', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'middle_east'], path: 'M420,225 L480,220 L490,270 L450,280 L430,280 Z' },
+  east_africa: { name: 'East Africa', continent: 'africa', adjacent: ['north_africa', 'egypt', 'central_africa', 'south_africa', 'madagascar'], path: 'M450,280 L510,275 L520,330 L480,350 L430,320 Z' },
+  central_africa: { name: 'Central Africa', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'south_africa'], path: 'M380,300 L430,320 L420,370 L370,360 Z' },
+  south_africa: { name: 'South Africa', continent: 'africa', adjacent: ['east_africa', 'central_africa', 'madagascar'], path: 'M420,370 L480,350 L490,410 L440,420 Z' },
+  madagascar: { name: 'Madagascar', continent: 'africa', adjacent: ['east_africa', 'south_africa'], path: 'M510,350 L540,340 L545,390 L520,400 Z' },
+
+  // Asia (12 territories)
+  middle_east: { name: 'Middle East', continent: 'asia', adjacent: ['ukraine', 'southern_europe', 'egypt', 'afghanistan', 'india'], path: 'M480,180 L550,175 L560,230 L520,250 L470,220 Z' },
+  afghanistan: { name: 'Afghanistan', continent: 'asia', adjacent: ['ukraine', 'middle_east', 'india', 'china', 'ural'], path: 'M550,175 L610,165 L620,210 L580,230 L560,230 Z' },
+  india: { name: 'India', continent: 'asia', adjacent: ['middle_east', 'afghanistan', 'china', 'southeast_asia'], path: 'M580,230 L640,220 L650,290 L610,310 L560,270 Z' },
+  china: { name: 'China', continent: 'asia', adjacent: ['afghanistan', 'india', 'southeast_asia', 'mongolia', 'ural', 'siberia'], path: 'M620,210 L700,200 L710,270 L660,290 L640,250 L620,210 Z' },
+  southeast_asia: { name: 'Southeast Asia', continent: 'asia', adjacent: ['india', 'china', 'indonesia'], path: 'M660,290 L720,280 L730,340 L690,350 L650,310 Z' },
+  mongolia: { name: 'Mongolia', continent: 'asia', adjacent: ['china', 'siberia', 'japan', 'kamchatka'], path: 'M700,150 L760,140 L770,190 L720,200 Z' },
+  japan: { name: 'Japan', continent: 'asia', adjacent: ['mongolia', 'kamchatka'], path: 'M780,180 L810,170 L815,210 L790,220 Z' },
+  kamchatka: { name: 'Kamchatka', continent: 'asia', adjacent: ['alaska', 'mongolia', 'japan', 'siberia'], path: 'M780,80 L840,70 L850,120 L810,130 L780,100 Z' },
+  siberia: { name: 'Siberia', continent: 'asia', adjacent: ['ural', 'china', 'mongolia', 'kamchatka'], path: 'M620,60 L720,50 L740,120 L700,150 L620,130 Z' },
+  ural: { name: 'Ural', continent: 'asia', adjacent: ['ukraine', 'afghanistan', 'china', 'siberia'], path: 'M520,120 L600,110 L610,160 L560,170 Z' },
+  central_asia: { name: 'Central Asia', continent: 'asia', adjacent: ['afghanistan', 'india', 'china'], path: 'M610,165 L660,160 L665,200 L620,205 Z' },
+  middle_east_south: { name: 'Yemen', continent: 'asia', adjacent: ['middle_east', 'east_africa', 'india'], path: 'M560,270 L590,265 L595,310 L570,315 Z' },
+
+  // Oceania (5 territories)
+  indonesia: { name: 'Indonesia', continent: 'oceania', adjacent: ['southeast_asia', 'new_guinea', 'australia'], path: 'M700,350 L760,340 L770,390 L720,400 Z' },
+  new_guinea: { name: 'New Guinea', continent: 'oceania', adjacent: ['indonesia', 'australia'], path: 'M780,350 L830,340 L840,390 L800,400 Z' },
+  australia: { name: 'Australia', continent: 'oceania', adjacent: ['indonesia', 'new_guinea'], path: 'M760,400 L830,390 L840,450 L780,460 Z' },
+  new_zealand: { name: 'New Zealand', continent: 'oceania', adjacent: ['australia'], path: 'M850,450 L880,440 L885,480 L860,485 Z' },
+  philippines: { name: 'Philippines', continent: 'oceania', adjacent: ['southeast_asia', 'indonesia'], path: 'M740,300 L770,295 L775,330 L745,335 Z' }
+};
+
+// === GAME STATE ===
+let gameState = {
+  phase: 'reinforce',
+  currentPlayer: 0,
+  turn: 1,
+  playerCount: 2,
+  players: [],
+  territories: new Map(),
+  selectedTerritory: null,
+  attackTarget: null,
+  fortifySource: null,
+  fortifyDest: null,
+  combatLog: [],
+  gameOver: false,
+  winner: null,
+  attackedTerritoriesThisTurn: new Set()
+};
+
+function initGame(playerCount) {
+  gameState.playerCount = playerCount;
+  gameState.turn = 1;
+  gameState.currentPlayer = 0;
+  gameState.phase = 'reinforce';
+  gameState.gameOver = false;
+  gameState.winner = null;
+  gameState.combatLog = [];
+  gameState.selectedTerritory = null;
+  gameState.attackTarget = null;
+  gameState.fortifySource = null;
+  gameState.fortifyDest = null;
+  gameState.attackedTerritoriesThisTurn = new Set();
+
+  // Initialize players
+  gameState.players = [];
+  for (let i = 0; i < playerCount; i++) {
+    gameState.players.push({
+      id: i,
+      name: PLAYER_NAMES[i],
+      color: PLAYER_COLORS[i],
+      territories: new Set(),
+      eliminated: false
+    });
+  }
+
+  // Initialize territories
+  const territoryIds = Object.keys(TERRITORIES);
+  gameState.territories = new Map();
+  for (const id of territoryIds) {
+    gameState.territories.set(id, { owner: null, armies: 1 });
+  }
+
+  // Shuffle and distribute territories randomly
+  const shuffled = [...territoryIds].sort(() => Math.random() - 0.5);
+  shuffled.forEach((id, index) => {
+    const playerIndex = index % playerCount;
+    gameState.territories.set(id, { owner: playerIndex, armies: 1 });
+    gameState.players[playerIndex].territories.add(id);
+  });
+
+  // Give each player 3 armies to start
+  for (let i = 0; i < playerCount; i++) {
+    gameState.players[i].territories.forEach(t => {
+      const terr = gameState.territories.get(t);
+      terr.armies++;
+    });
+  }
+}
+
+function getPlayerTerritories(playerIndex) {
+  const result = [];
+  for (const [id, data] of gameState.territories) {
+    if (data.owner === playerIndex) result.push(id);
+  }
+  return result;
+}
+
+function getContinentTerritories(continent) {
+  const result = [];
+  for (const [id, data] of Object.entries(TERRITORIES)) {
+    if (data.continent === continent) result.push(id);
+  }
+  return result;
+}
+
+function ownsContinent(playerIndex, continent) {
+  const contTerritories = getContinentTerritories(continent);
+  return contTerritories.every(t => {
+    const owner = gameState.territories.get(t).owner;
+    return owner === playerIndex;
+  });
+}
+
+function calculateReinforcements(playerIndex) {
+  const territories = getPlayerTerritories(playerIndex);
+  const base = Math.max(3, Math.floor(territories.length / 3));
+  let bonus = 0;
+  for (const cont of Object.keys(CONTINENTS)) {
+    if (ownsContinent(playerIndex, cont)) {
+      bonus += CONTINENTS[cont].bonus;
+    }
+  }
+  return base + bonus;
+}
+
+function nextPhase() {
+  if (gameState.phase === 'reinforce') {
+    gameState.phase = 'attack';
+  } else if (gameState.phase === 'attack') {
+    gameState.phase = 'fortify';
+  } else if (gameState.phase === 'fortify') {
+    // End turn
+    gameState.turn++;
+    gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.playerCount;
+    // Skip eliminated players
+    while (gameState.players[gameState.currentPlayer].eliminated) {
+      gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.playerCount;
+    }
+    gameState.phase = 'reinforce';
+    gameState.attackedTerritoriesThisTurn = new Set();
+  }
+  gameState.selectedTerritory = null;
+  gameState.attackTarget = null;
+  gameState.fortifySource = null;
+  gameState.fortifyDest = null;
+}
+
+// === DICE COMBAT ===
+function rollDice(count) {
+  const dice = [];
+  for (let i = 0; i < count; i++) {
+    dice.push(Math.floor(Math.random() * 6) + 1);
+  }
+  return dice.sort((a, b) => b - a);
+}
+
+function resolveCombat(attackerDice, defenderDice) {
+  const results = { attackerLosses: 0, defenderLosses: 0 };
+  const pairs = Math.min(attackerDice.length, defenderDice.length);
+
+  for (let i = 0; i < pairs; i++) {
+    if (attackerDice[i] > defenderDice[i]) {
+      results.defenderLosses++;
+    } else {
+      results.attackerLosses++;
+    }
+  }
+  return results;
+}
+
+function getMaxAttackDice(armies) {
+  return Math.min(3, armies - 1);
+}
+
+function getMaxDefendDice(armies) {
+  return Math.min(2, armies);
+}
+
+// === RENDERING ===
+function renderMap() {
+  const svg = document.getElementById('game-map');
+  svg.innerHTML = '';
+
+  for (const [id, terr] of Object.entries(TERRITORIES)) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', terr.path);
+    path.setAttribute('id', id);
+    path.setAttribute('class', 'territory');
+    path.setAttribute('data-territory', id);
+
+    const owner = gameState.territories.get(id).owner;
+    if (owner !== null) {
+      path.style.fill = PLAYER_COLORS[owner];
+    }
+
+    svg.appendChild(path);
+  }
+}
+
+function updateTerritoryColors() {
+  for (const [id, data] of gameState.territories) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.fill = PLAYER_COLORS[data.owner];
+    }
+  }
+}
+
+function updateUI() {
+  // Update top bar
+  const phaseEl = document.querySelector('.phase-indicator');
+  phaseEl.textContent = gameState.phase.charAt(0).toUpperCase() + gameState.phase.slice(1);
+
+  const turnEl = document.querySelector('.turn-counter');
+  turnEl.textContent = 'Turn ' + gameState.turn;
+
+  const playerEl = document.querySelector('.current-player .player-name');
+  playerEl.textContent = gameState.players[gameState.currentPlayer].name;
+
+  const dotEl = document.querySelector('.current-player .player-color-dot');
+  dotEl.style.background = PLAYER_COLORS[gameState.currentPlayer];
+
+  // Update phase actions
+  const endBtn = document.getElementById('end-phase-btn');
+  if (gameState.phase === 'reinforce') {
+    endBtn.textContent = 'End Reinforce';
+  } else if (gameState.phase === 'attack') {
+    endBtn.textContent = 'End Attack';
+  } else if (gameState.phase === 'fortify') {
+    endBtn.textContent = 'End Fortify';
+  }
+
+  // Update armies to place display
+  const armiesEl = document.getElementById('armies-remaining');
+  if (gameState.phase === 'reinforce') {
+    const reinforcements = calculateReinforcements(gameState.currentPlayer);
+    const placed = getPlayerTerritories(gameState.currentPlayer).reduce((sum, t) => {
+      return sum + gameState.territories.get(t).armies;
+    }, 0) - getPlayerTerritories(gameState.currentPlayer).length;
+    const remaining = reinforcements - (placed - getPlayerTerritories(gameState.currentPlayer).length);
+    armiesEl.textContent = remaining;
+  } else {
+    armiesEl.textContent = '-';
+  }
+
+  // Update player list
+  const playerList = document.getElementById('player-list');
+  playerList.innerHTML = '';
+  for (let i = 0; i < gameState.players.length; i++) {
+    const p = gameState.players[i];
+    const div = document.createElement('div');
+    div.className = 'player-entry' + (p.eliminated ? ' eliminated' : '') +
+      (i === gameState.currentPlayer ? ' current-turn' : '');
+    div.innerHTML = '<div class="color-dot" style="background:' + p.color + '"></div>' +
+      '<span class="player-name">' + p.name + '</span>' +
+      '<span class="player-stats">' + p.territories.size + ' territories</span>';
+    playerList.appendChild(div);
+  }
+
+  // Update combat log
+  const logEl = document.getElementById('combat-log');
+  logEl.innerHTML = '';
+  const recentLogs = gameState.combatLog.slice(-5);
+  for (const entry of recentLogs) {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.textContent = entry;
+    logEl.appendChild(div);
+  }
+}
+
+function showDiceModal(attackerTerr, defenderTerr, callback) {
+  const modal = document.getElementById('dice-modal');
+  const attackerDiceEl = document.getElementById('attacker-dice');
+  const defenderDiceEl = document.getElementById('defender-dice');
+  const resultTextEl = document.getElementById('dice-result-text');
+
+  const attackerArmies = gameState.territories.get(attackerTerr).armies;
+  const defenderArmies = gameState.territories.get(defenderTerr).armies;
+
+  const attackDice = getMaxAttackDice(attackerArmies);
+  const defendDice = getMaxDefendDice(defenderArmies);
+
+  const attackRolls = rollDice(attackDice);
+  const defendRolls = rollDice(defendDice);
+
+  // Show dice
+  attackerDiceEl.innerHTML = attackRolls.map(d => '<div class="die">' + d + '</div>').join('');
+  defenderDiceEl.innerHTML = defendRolls.map(d => '<div class="die">' + d + '</div>').join('');
+
+  // Resolve combat
+  const result = resolveCombat(attackRolls, defendRolls);
+
+  // Highlight winners/losers
+  const attackDiceEls = attackerDiceEl.querySelectorAll('.die');
+  const defendDiceEls = defenderDiceEl.querySelectorAll('.die');
+
+  for (let i = 0; i < attackRolls.length && i < defendRolls.length; i++) {
+    if (attackRolls[i] > defendRolls[i]) {
+      attackDiceEls[i].classList.add('winner');
+      defendDiceEls[i].classList.add('loser');
+    } else {
+      attackDiceEls[i].classList.add('loser');
+      defendDiceEls[i].classList.add('winner');
+    }
+  }
+
+  resultTextEl.textContent = 'Attacker loses ' + result.attackerLosses +
+    ', Defender loses ' + result.defenderLosses;
+
+  modal.classList.add('active');
+
+  setTimeout(() => {
+    modal.classList.remove('active');
+    callback(result);
+  }, 1200);
+}
+
+function checkVictory() {
+  let activePlayers = 0;
+  let winner = null;
+  for (const p of gameState.players) {
+    if (!p.eliminated) {
+      activePlayers++;
+      winner = p;
+    }
+  }
+
+  if (activePlayers === 1) {
+    gameState.gameOver = true;
+    gameState.winner = winner.id;
+    return true;
+  }
+
+  // Check if someone owns all territories
+  const territoryOwners = new Set();
+  for (const [id, data] of gameState.territories) {
+    territoryOwners.add(data.owner);
+  }
+  if (territoryOwners.size === 1 && !territoryOwners.has(null)) {
+    gameState.gameOver = true;
+    gameState.winner = [...territoryOwners][0];
+    return true;
+  }
+
+  return false;
+}
+
+function showGameOverModal() {
+  const modal = document.getElementById('game-over-modal');
+  const content = document.getElementById('game-over-content');
+  const title = document.getElementById('game-over-title');
+  const text = document.getElementById('game-over-text');
+
+  if (gameState.winner === 0) {
+    content.className = 'victory';
+    title.textContent = 'VICTORY';
+    text.textContent = 'You conquered the world!';
+  } else {
+    content.className = 'defeat';
+    title.textContent = 'DEFEAT';
+    text.textContent = PLAYER_NAMES[gameState.winner] + ' has conquered the world.';
+  }
+
+  modal.classList.add('active');
+}
+
+// === AI LOGIC ===
+function aiTurn() {
+  if (gameState.gameOver) return;
+  if (gameState.currentPlayer === 0) return; // Human player
+
+  const playerIndex = gameState.currentPlayer;
+
+  // Reinforce phase
+  if (gameState.phase === 'reinforce') {
+    const reinforcements = calculateReinforcements(playerIndex);
+    let remaining = reinforcements;
+
+    // Get border territories (adjacent to enemies)
+    const myTerritories = getPlayerTerritories(playerIndex);
+    const borderTerrs = myTerritories.filter(t => {
+      const adj = TERRITORIES[t].adjacent;
+      return adj.some(adjId => gameState.territories.get(adjId).owner !== playerIndex);
+    });
+
+    // Place armies on border territories
+    while (remaining > 0) {
+      const target = borderTerrs.length > 0 ?
+        borderTerrs[Math.floor(Math.random() * borderTerrs.length)] :
+        myTerritories[Math.floor(Math.random() * myTerritories.length)];
+      gameState.territories.get(target).armies++;
+      remaining--;
+    }
+
+    updateUI();
+    nextPhase();
+    setTimeout(aiTurn, 500);
+    return;
+  }
+
+  // Attack phase
+  if (gameState.phase === 'attack') {
+    const myTerritories = getPlayerTerritories(playerIndex);
+    const canAttack = myTerritories.filter(t => gameState.territories.get(t).armies > 1);
+
+    let attacked = false;
+    for (const from of canAttack) {
+      if (gameState.attackedTerritoriesThisTurn.has(from)) continue;
+
+      const adj = TERRITORIES[from].adjacent;
+      const targets = adj.filter(t =>
+        gameState.territories.get(t).owner !== playerIndex &&
+        !gameState.attackedTerritoriesThisTurn.has(from)
+      );
+
+      for (const to of targets) {
+        const attackDice = getMaxAttackDice(gameState.territories.get(from).armies);
+        const defendDice = getMaxDefendDice(gameState.territories.get(to).armies);
+
+        // Attack if favorable odds
+        if (attackDice >= defendDice && Math.random() > 0.3) {
+          gameState.attackedTerritoriesThisTurn.add(from);
+          showDiceModal(from, to, (result) => {
+            const fromTerr = gameState.territories.get(from);
+            const toTerr = gameState.territories.get(to);
+
+            fromTerr.armies -= result.attackerLosses;
+            toTerr.armies -= result.defenderLosses;
+
+            const logMsg = TERRITORIES[from].name + ' attacks ' +
+              TERRITORIES[to].name + ': A loses ' + result.attackerLosses +
+              ', D loses ' + result.defenderLosses;
+            gameState.combatLog.push(logMsg);
+
+            // Capture
+            if (toTerr.armies <= 0) {
+              const moveArmies = Math.min(fromTerr.armies - 1, 3);
+              fromTerr.armies -= moveArmies;
+              toTerr.armies = moveArmies;
+
+              // Transfer ownership
+              const oldOwner = toTerr.owner;
+              if (oldOwner !== null) {
+                gameState.players[oldOwner].territories.delete(to);
+                if (gameState.players[oldOwner].territories.size === 0) {
+                  gameState.players[oldOwner].eliminated = true;
+                }
+              }
+              toTerr.owner = playerIndex;
+              gameState.players[playerIndex].territories.add(to);
+
+              gameState.combatLog.push(TERRITORIES[from].name + ' captures ' + TERRITORIES[to].name + '!');
+
+              if (checkVictory()) {
+                updateUI();
+                showGameOverModal();
+                return;
+              }
+            }
+
+            updateUI();
+            updateTerritoryColors();
+
+            if (!checkVictory()) {
+              setTimeout(aiTurn, 600);
+            }
+          });
+          attacked = true;
+          break;
+        }
+      }
+      if (attacked) break;
+    }
+
+    if (!attacked) {
+      nextPhase();
+      updateUI();
+      setTimeout(aiTurn, 500);
+    }
+    return;
+  }
+
+  // Fortify phase
+  if (gameState.phase === 'fortify') {
+    const myTerritories = getPlayerTerritories(playerIndex);
+
+    // Find source territories (not border) and destination (border)
+    const sourceTerrs = myTerritories.filter(t => {
+      const adj = TERRITORIES[t].adjacent;
+      return !adj.some(adjId => gameState.territories.get(adjId).owner !== playerIndex);
+    });
+
+    const destTerrs = myTerritories.filter(t => {
+      const adj = TERRITORIES[t].adjacent;
+      return adj.some(adjId => gameState.territories.get(adjId).owner !== playerIndex);
+    });
+
+    if (sourceTerrs.length > 0 && destTerrs.length > 0) {
+      const source = sourceTerrs[Math.floor(Math.random() * sourceTerrs.length)];
+      const dest = destTerrs[Math.floor(Math.random() * destTerrs.length)];
+      const armiesToMove = Math.floor(gameState.territories.get(source).armies / 2);
+      if (armiesToMove > 0) {
+        gameState.territories.get(source).armies -= armiesToMove;
+        gameState.territories.get(dest).armies += armiesToMove;
+      }
+    }
+
+    nextPhase();
+    updateUI();
+    updateTerritoryColors();
+
+    if (!checkVictory()) {
+      setTimeout(aiTurn, 500);
+    }
+  }
+}
+
+// === EVENT HANDLERS ===
+function setupEventListeners() {
+  // Player count buttons
+  document.querySelectorAll('.player-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  // Start button
+  document.getElementById('start-btn').addEventListener('click', () => {
+    const selected = document.querySelector('.player-btn.selected');
+    if (!selected) return;
+    const count = parseInt(selected.dataset.count);
+
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-container').style.display = 'flex';
+
+    initGame(count);
+    renderMap();
+    updateUI();
+    updateTerritoryColors();
+
+    if (gameState.currentPlayer !== 0) {
+      setTimeout(aiTurn, 800);
+    }
+  });
+
+  // Map click
+  document.getElementById('game-map').addEventListener('click', (e) => {
+    if (gameState.gameOver) return;
+    if (gameState.currentPlayer !== 0) return; // AI turn
+
+    const territory = e.target.closest('.territory');
+    if (!territory) return;
+
+    const id = territory.id;
+    const data = gameState.territories.get(id);
+
+    if (gameState.phase === 'reinforce') {
+      if (data.owner === gameState.currentPlayer) {
+        data.armies++;
+        updateUI();
+      }
+    } else if (gameState.phase === 'attack') {
+      if (gameState.selectedTerritory === null) {
+        // Select attacker
+        if (data.owner === gameState.currentPlayer && data.armies > 1) {
+          gameState.selectedTerritory = id;
+          territory.classList.add('selected');
+        }
+      } else if (gameState.selectedTerritory === id) {
+        // Deselect
+        gameState.selectedTerritory = null;
+        territory.classList.remove('selected');
+      } else {
+        // Attack target
+        const attackerTerr = gameState.selectedTerritory;
+        if (attackerTerr && TERRITORIES[attackerTerr].adjacent.includes(id)) {
+          if (data.owner !== gameState.currentPlayer &&
+              !gameState.attackedTerritoriesThisTurn.has(attackerTerr)) {
+            gameState.attackTarget = id;
+            gameState.attackedTerritoriesThisTurn.add(attackerTerr);
+
+            showDiceModal(attackerTerr, id, (result) => {
+              const attackerData = gameState.territories.get(attackerTerr);
+              const defenderData = gameState.territories.get(id);
+
+              attackerData.armies -= result.attackerLosses;
+              defenderData.armies -= result.defenderLosses;
+
+              const logMsg = TERRITORIES[attackerTerr].name + ' attacks ' +
+                TERRITORIES[id].name + ': A loses ' + result.attackerLosses +
+                ', D loses ' + result.defenderLosses;
+              gameState.combatLog.push(logMsg);
+
+              // Capture
+              if (defenderData.armies <= 0) {
+                const moveArmies = Math.min(attackerData.armies - 1, 3);
+                attackerData.armies -= moveArmies;
+                defenderData.armies = moveArmies;
+
+                // Transfer ownership
+                const oldOwner = defenderData.owner;
+                if (oldOwner !== null) {
+                  gameState.players[oldOwner].territories.delete(id);
+                  if (gameState.players[oldOwner].territories.size === 0) {
+                    gameState.players[oldOwner].eliminated = true;
+                  }
+                }
+                defenderData.owner = gameState.currentPlayer;
+                gameState.players[gameState.currentPlayer].territories.add(id);
+
+                gameState.combatLog.push(TERRITORIES[attackerTerr].name + ' captures ' + TERRITORIES[id].name + '!');
+
+                if (checkVictory()) {
+                  updateUI();
+                  updateTerritoryColors();
+                  showGameOverModal();
+                  return;
+                }
+              }
+
+              gameState.selectedTerritory = null;
+              updateUI();
+              updateTerritoryColors();
+            });
+          }
+        }
+      }
+    } else if (gameState.phase === 'fortify') {
+      if (gameState.fortifySource === null) {
+        if (data.owner === gameState.currentPlayer && data.armies > 1) {
+          gameState.fortifySource = id;
+        }
+      } else if (gameState.fortifyDest === null) {
+        if (id === gameState.fortifySource) {
+          gameState.fortifySource = null;
+        } else if (data.owner === gameState.currentPlayer &&
+                   TERRITORIES[gameState.fortifySource].adjacent.includes(id)) {
+          gameState.fortifyDest = id;
+          document.getElementById('fortify-source').value = gameState.fortifySource;
+          document.getElementById('fortify-dest').value = gameState.fortifyDest;
+          document.getElementById('fortify-slider').max = gameState.territories.get(gameState.fortifySource).armies - 1;
+          document.getElementById('fortify-slider').value = 0;
+          document.getElementById('fortify-slider').min = 0;
+          document.getElementById('fortify-value').textContent = '0';
+          document.getElementById('fortify-modal').classList.add('active');
+        }
+      }
+    }
+  });
+
+  // Map hover
+  document.getElementById('game-map').addEventListener('mousemove', (e) => {
+    const territory = e.target.closest('.territory');
+    const tooltip = document.getElementById('tooltip');
+
+    if (territory) {
+      const id = territory.id;
+      const data = gameState.territories.get(id);
+      const owner = data.owner !== null ? PLAYER_NAMES[data.owner] : 'None';
+
+      tooltip.querySelector('.tooltip-name').textContent = TERRITORIES[id].name;
+      tooltip.querySelector('#tooltip-armies').textContent = data.armies + ' armies (' + owner + ')';
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 15) + 'px';
+      tooltip.style.top = (e.clientY + 15) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  // End phase button
+  document.getElementById('end-phase-btn').addEventListener('click', () => {
+    if (gameState.currentPlayer !== 0) return;
+
+    if (gameState.phase === 'reinforce') {
+      nextPhase();
+      updateUI();
+      if (gameState.currentPlayer !== 0) {
+        setTimeout(aiTurn, 500);
+      }
+    } else if (gameState.phase === 'attack') {
+      nextPhase();
+      updateUI();
+      if (gameState.currentPlayer !== 0) {
+        setTimeout(aiTurn, 500);
+      }
+    } else if (gameState.phase === 'fortify') {
+      nextPhase();
+      updateUI();
+      updateTerritoryColors();
+      if (gameState.currentPlayer !== 0) {
+        setTimeout(aiTurn, 500);
+      }
+    }
+  });
+
+  // Fortify controls
+  document.getElementById('fortify-slider').addEventListener('input', (e) => {
+    document.getElementById('fortify-value').textContent = e.target.value;
+  });
+
+  document.getElementById('confirm-fortify').addEventListener('click', () => {
+    const source = document.getElementById('fortify-source').value;
+    const dest = document.getElementById('fortify-dest').value;
+    const armies = parseInt(document.getElementById('fortify-slider').value);
+
+    if (armies > 0) {
+      gameState.territories.get(source).armies -= armies;
+      gameState.territories.get(dest).armies += armies;
+    }
+
+    document.getElementById('fortify-modal').classList.remove('active');
+    nextPhase();
+    updateUI();
+    updateTerritoryColors();
+
+    if (gameState.currentPlayer !== 0) {
+      setTimeout(aiTurn, 500);
+    }
+  });
+
+  document.getElementById('cancel-fortify').addEventListener('click', () => {
+    document.getElementById('fortify-modal').classList.remove('active');
+    gameState.fortifySource = null;
+    gameState.fortifyDest = null;
+  });
+
+  // Play again
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    document.getElementById('game-over-modal').classList.remove('active');
+    document.getElementById('start-screen').style.display = 'flex';
+    document.getElementById('game-container').style.display = 'none';
+    document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('fortify-modal').classList.remove('active');
+      gameState.fortifySource = null;
+      gameState.fortifyDest = null;
+    }
+    if (e.key === ' ') {
+      e.preventDefault();
+      document.getElementById('end-phase-btn').click();
+    }
+  });
+}
+
+// Initialize
+setupEventListeners();
+</script>
