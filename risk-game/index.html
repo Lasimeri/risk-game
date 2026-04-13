@@ -795,33 +795,32 @@ const TERRITORIES = {
   southern_europe: { name: 'Southern Europe', continent: 'europe', adjacent: ['ukraine', 'northern_europe', 'western_europe', 'north_africa', 'middle_east'], path: 'M400,175 L480,180 L470,220 L420,225 L385,180 Z' },
 
   // Africa (6 territories)
-  north_africa: { name: 'North Africa', continent: 'africa', adjacent: ['southern_europe', 'egypt', 'east_africa', 'central_africa', 'western_europe'], path: 'M350,220 L420,225 L430,280 L380,300 L320,270 Z' },
+  north_africa: { name: 'North Africa', continent: 'africa', adjacent: ['southern_europe', 'egypt', 'east_africa', 'congo', 'western_europe'], path: 'M350,220 L420,225 L430,280 L380,300 L320,270 Z' },
   egypt: { name: 'Egypt', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'middle_east'], path: 'M420,225 L480,220 L490,270 L450,280 L430,280 Z' },
-  east_africa: { name: 'East Africa', continent: 'africa', adjacent: ['north_africa', 'egypt', 'central_africa', 'south_africa', 'madagascar'], path: 'M450,280 L510,275 L520,330 L480,350 L430,320 Z' },
-  central_africa: { name: 'Central Africa', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'south_africa'], path: 'M380,300 L430,320 L420,370 L370,360 Z' },
-  south_africa: { name: 'South Africa', continent: 'africa', adjacent: ['east_africa', 'central_africa', 'madagascar'], path: 'M420,370 L480,350 L490,410 L440,420 Z' },
+  east_africa: { name: 'East Africa', continent: 'africa', adjacent: ['north_africa', 'egypt', 'congo', 'south_africa', 'madagascar'], path: 'M450,280 L510,275 L520,330 L480,350 L430,320 Z' },
+  congo: { name: 'Congo', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'south_africa'], path: 'M380,300 L430,320 L420,370 L370,360 Z' },
+  south_africa: { name: 'South Africa', continent: 'africa', adjacent: ['east_africa', 'congo', 'madagascar'], path: 'M420,370 L480,350 L490,410 L440,420 Z' },
   madagascar: { name: 'Madagascar', continent: 'africa', adjacent: ['east_africa', 'south_africa'], path: 'M510,350 L540,340 L545,390 L520,400 Z' },
 
   // Asia (12 territories)
   middle_east: { name: 'Middle East', continent: 'asia', adjacent: ['ukraine', 'southern_europe', 'egypt', 'afghanistan', 'india'], path: 'M480,180 L550,175 L560,230 L520,250 L470,220 Z' },
   afghanistan: { name: 'Afghanistan', continent: 'asia', adjacent: ['ukraine', 'middle_east', 'india', 'china', 'ural'], path: 'M550,175 L610,165 L620,210 L580,230 L560,230 Z' },
-  india: { name: 'India', continent: 'asia', adjacent: ['middle_east', 'afghanistan', 'china', 'southeast_asia'], path: 'M580,230 L640,220 L650,290 L610,310 L560,270 Z' },
-  china: { name: 'China', continent: 'asia', adjacent: ['afghanistan', 'india', 'southeast_asia', 'mongolia', 'ural', 'siberia'], path: 'M620,210 L700,200 L710,270 L660,290 L640,250 L620,210 Z' },
-  southeast_asia: { name: 'Southeast Asia', continent: 'asia', adjacent: ['india', 'china', 'indonesia'], path: 'M660,290 L720,280 L730,340 L690,350 L650,310 Z' },
-  mongolia: { name: 'Mongolia', continent: 'asia', adjacent: ['china', 'siberia', 'japan', 'kamchatka'], path: 'M700,150 L760,140 L770,190 L720,200 Z' },
+  india: { name: 'India', continent: 'asia', adjacent: ['middle_east', 'afghanistan', 'china', 'siam'], path: 'M580,230 L640,220 L650,290 L610,310 L560,270 Z' },
+  china: { name: 'China', continent: 'asia', adjacent: ['afghanistan', 'india', 'siam', 'mongolia', 'ural', 'siberia'], path: 'M620,210 L700,200 L710,270 L660,290 L640,250 L620,210 Z' },
+  siam: { name: 'Siam', continent: 'asia', adjacent: ['india', 'china', 'indonesia'], path: 'M660,290 L720,280 L730,340 L690,350 L650,310 Z' },
+  mongolia: { name: 'Mongolia', continent: 'asia', adjacent: ['china', 'siberia', 'japan', 'irkutsk'], path: 'M700,150 L760,140 L770,190 L720,200 Z' },
   japan: { name: 'Japan', continent: 'asia', adjacent: ['mongolia', 'kamchatka'], path: 'M780,180 L810,170 L815,210 L790,220 Z' },
-  kamchatka: { name: 'Kamchatka', continent: 'asia', adjacent: ['alaska', 'mongolia', 'japan', 'siberia'], path: 'M780,80 L840,70 L850,120 L810,130 L780,100 Z' },
-  siberia: { name: 'Siberia', continent: 'asia', adjacent: ['ural', 'china', 'mongolia', 'kamchatka'], path: 'M620,60 L720,50 L740,120 L700,150 L620,130 Z' },
+  kamchatka: { name: 'Kamchatka', continent: 'asia', adjacent: ['alaska', 'mongolia', 'japan', 'irkutsk'], path: 'M780,80 L840,70 L850,120 L810,130 L780,100 Z' },
+  siberia: { name: 'Siberia', continent: 'asia', adjacent: ['ural', 'china', 'mongolia', 'irkutsk'], path: 'M620,60 L720,50 L740,120 L700,150 L620,130 Z' },
   ural: { name: 'Ural', continent: 'asia', adjacent: ['ukraine', 'afghanistan', 'china', 'siberia'], path: 'M520,120 L600,110 L610,160 L560,170 Z' },
-  central_asia: { name: 'Central Asia', continent: 'asia', adjacent: ['afghanistan', 'india', 'china'], path: 'M610,165 L660,160 L665,200 L620,205 Z' },
-  middle_east_south: { name: 'Yemen', continent: 'asia', adjacent: ['middle_east', 'east_africa', 'india'], path: 'M560,270 L590,265 L595,310 L570,315 Z' },
+  yakutsk: { name: 'Yakutsk', continent: 'asia', adjacent: ['siberia', 'irkutsk', 'kamchatka', 'japan', 'mongolia'], path: 'M610,165 L660,160 L665,200 L620,205 Z' },
+  irkutsk: { name: 'Irkutsk', continent: 'asia', adjacent: ['siberia', 'yakutsk', 'kamchatka', 'mongolia', 'china'], path: 'M560,270 L590,265 L595,310 L570,315 Z' },
 
-  // Oceania (5 territories)
-  indonesia: { name: 'Indonesia', continent: 'oceania', adjacent: ['southeast_asia', 'new_guinea', 'australia'], path: 'M700,350 L760,340 L770,390 L720,400 Z' },
-  new_guinea: { name: 'New Guinea', continent: 'oceania', adjacent: ['indonesia', 'australia'], path: 'M780,350 L830,340 L840,390 L800,400 Z' },
-  australia: { name: 'Australia', continent: 'oceania', adjacent: ['indonesia', 'new_guinea'], path: 'M760,400 L830,390 L840,450 L780,460 Z' },
-  new_zealand: { name: 'New Zealand', continent: 'oceania', adjacent: ['australia'], path: 'M850,450 L880,440 L885,480 L860,485 Z' },
-  philippines: { name: 'Philippines', continent: 'oceania', adjacent: ['southeast_asia', 'indonesia'], path: 'M740,300 L770,295 L775,330 L745,335 Z' }
+  // Oceania (4 territories)
+  indonesia: { name: 'Indonesia', continent: 'oceania', adjacent: ['siam', 'new_guinea', 'western_australia'], path: 'M700,350 L760,340 L770,390 L720,400 Z' },
+  new_guinea: { name: 'New Guinea', continent: 'oceania', adjacent: ['indonesia', 'western_australia'], path: 'M780,350 L830,340 L840,390 L800,400 Z' },
+  western_australia: { name: 'Western Australia', continent: 'oceania', adjacent: ['indonesia', 'new_guinea', 'eastern_australia'], path: 'M760,400 L830,390 L840,450 L780,460 Z' },
+  eastern_australia: { name: 'Eastern Australia', continent: 'oceania', adjacent: ['western_australia'], path: 'M850,450 L880,440 L885,480 L860,485 Z' }
 };
 
 // === GAME STATE ===
