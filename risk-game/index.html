@@ -695,6 +695,7 @@
       <button id="play-again-btn">Play Again</button>
     </div>
   </div>
+  <script src="svg-paths.js"></script>
   <script>
     // === SOUND MANAGER ===
 const SoundManager = {
@@ -769,58 +770,58 @@ const PLAYER_NAMES = ['Red', 'Blue', 'Green', 'Purple', 'Orange', 'Cyan'];
 // Territory definitions with SVG path data
 const TERRITORIES = {
   // North America (8 territories)
-  alaska: { name: 'Alaska', continent: 'north_america', adjacent: ['kamchatka', 'northwest_territory', 'alberta'], path: 'M80,60 L120,50 L140,80 L130,120 L90,110 Z' },
-  northwest_territory: { name: 'Northwest Territory', continent: 'north_america', adjacent: ['alaska', 'alberta', 'greenland'], path: 'M140,80 L180,60 L200,100 L180,140 L130,120 Z' },
-  greenland: { name: 'Greenland', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'iceland'], path: 'M280,20 L340,30 L350,80 L300,100 L260,70 Z' },
-  alberta: { name: 'Alberta', continent: 'north_america', adjacent: ['alaska', 'northwest_territory', 'ontario', 'western_us'], path: 'M130,120 L180,140 L190,180 L150,190 L110,170 Z' },
-  ontario: { name: 'Ontario', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'alberta', 'eastern_us'], path: 'M180,140 L240,130 L250,180 L220,210 L150,190 Z' },
-  quebec: { name: 'Quebec', continent: 'north_america', adjacent: ['northwest_territory', 'greenland', 'ontario'], path: 'M240,130 L300,100 L310,160 L260,190 L250,180 Z' },
+  alaska: { name: 'Alaska', continent: 'north_america', adjacent: ['kamchatka', 'northwest_territory', 'alberta'], path: SVG_PATHS.alaska.path },
+  northwest_territory: { name: 'Northwest Territory', continent: 'north_america', adjacent: ['alaska', 'alberta', 'greenland'], path: SVG_PATHS.northwest_territory.path },
+  greenland: { name: 'Greenland', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'iceland'], path: SVG_PATHS.greenland.path },
+  alberta: { name: 'Alberta', continent: 'north_america', adjacent: ['alaska', 'northwest_territory', 'ontario', 'western_us'], path: SVG_PATHS.alberta.path },
+  ontario: { name: 'Ontario', continent: 'north_america', adjacent: ['northwest_territory', 'quebec', 'alberta', 'eastern_us'], path: SVG_PATHS.ontario.path },
+  quebec: { name: 'Quebec', continent: 'north_america', adjacent: ['northwest_territory', 'greenland', 'ontario'], path: SVG_PATHS.quebec.path },
   western_us: { name: 'Western US', continent: 'north_america', adjacent: ['alberta', 'ontario', 'eastern_us', 'central_america'], path: 'M110,170 L150,190 L160,240 L120,250 L80,230 Z' },
   eastern_us: { name: 'Eastern US', continent: 'north_america', adjacent: ['ontario', 'western_us', 'central_america', 'quebec'], path: 'M150,190 L220,210 L230,260 L180,270 L160,240 Z' },
-  central_america: { name: 'Central America', continent: 'north_america', adjacent: ['western_us', 'eastern_us', 'venezuela'], path: 'M120,250 L180,270 L190,310 L150,320 L100,290 Z' },
+  central_america: { name: 'Central America', continent: 'north_america', adjacent: ['western_us', 'eastern_us', 'venezuela'], path: SVG_PATHS.central_america.path },
 
   // South America (4 territories)
-  venezuela: { name: 'Venezuela', continent: 'south_america', adjacent: ['central_america', 'peru', 'brazil'], path: 'M190,310 L240,300 L250,350 L210,370 L160,340 Z' },
-  peru: { name: 'Peru', continent: 'south_america', adjacent: ['venezuela', 'brazil', 'argentina'], path: 'M210,370 L250,350 L260,410 L220,430 L180,400 Z' },
-  brazil: { name: 'Brazil', continent: 'south_america', adjacent: ['venezuela', 'peru', 'argentina'], path: 'M250,350 L310,340 L320,400 L280,430 L260,410 Z' },
-  argentina: { name: 'Argentina', continent: 'south_america', adjacent: ['peru', 'brazil'], path: 'M220,430 L280,430 L270,490 L230,480 Z' },
+  venezuela: { name: 'Venezuela', continent: 'south_america', adjacent: ['central_america', 'peru', 'brazil'], path: SVG_PATHS.venezuela.path },
+  peru: { name: 'Peru', continent: 'south_america', adjacent: ['venezuela', 'brazil', 'argentina'], path: SVG_PATHS.peru.path },
+  brazil: { name: 'Brazil', continent: 'south_america', adjacent: ['venezuela', 'peru', 'argentina'], path: SVG_PATHS.brazil.path },
+  argentina: { name: 'Argentina', continent: 'south_america', adjacent: ['peru', 'brazil'], path: SVG_PATHS.argentina.path },
 
   // Europe (7 territories)
-  iceland: { name: 'Iceland', continent: 'europe', adjacent: ['greenland', 'scandinavia', 'great_britain'], path: 'M340,60 L380,55 L390,90 L350,100 Z' },
-  scandinavia: { name: 'Scandinavia', continent: 'europe', adjacent: ['iceland', 'ukraine', 'great_britain', 'northern_europe'], path: 'M420,60 L470,50 L480,100 L450,130 L400,110 Z' },
-  ukraine: { name: 'Ukraine', continent: 'europe', adjacent: ['scandinavia', 'northern_europe', 'southern_europe', 'middle_east'], path: 'M450,130 L520,120 L530,170 L480,180 L450,160 Z' },
-  great_britain: { name: 'Great Britain', continent: 'europe', adjacent: ['iceland', 'scandinavia', 'western_europe', 'northern_europe'], path: 'M340,100 L380,95 L385,130 L350,140 Z' },
-  western_europe: { name: 'Western Europe', continent: 'europe', adjacent: ['great_britain', 'northern_europe', 'southern_europe'], path: 'M340,140 L380,135 L385,180 L350,190 Z' },
-  northern_europe: { name: 'Northern Europe', continent: 'europe', adjacent: ['scandinavia', 'ukraine', 'great_britain', 'western_europe', 'southern_europe'], path: 'M380,95 L450,130 L440,170 L400,175 L385,130 Z' },
-  southern_europe: { name: 'Southern Europe', continent: 'europe', adjacent: ['ukraine', 'northern_europe', 'western_europe', 'north_africa', 'middle_east'], path: 'M400,175 L480,180 L470,220 L420,225 L385,180 Z' },
+  iceland: { name: 'Iceland', continent: 'europe', adjacent: ['greenland', 'scandinavia', 'great_britain'], path: SVG_PATHS.iceland.path },
+  scandinavia: { name: 'Scandinavia', continent: 'europe', adjacent: ['iceland', 'ukraine', 'great_britain', 'northern_europe'], path: SVG_PATHS.scandinavia.path },
+  ukraine: { name: 'Ukraine', continent: 'europe', adjacent: ['scandinavia', 'northern_europe', 'southern_europe', 'middle_east'], path: SVG_PATHS.ukraine.path },
+  great_britain: { name: 'Great Britain', continent: 'europe', adjacent: ['iceland', 'scandinavia', 'western_europe', 'northern_europe'], path: SVG_PATHS.great_britain.path },
+  western_europe: { name: 'Western Europe', continent: 'europe', adjacent: ['great_britain', 'northern_europe', 'southern_europe'], path: SVG_PATHS.western_europe.path },
+  northern_europe: { name: 'Northern Europe', continent: 'europe', adjacent: ['scandinavia', 'ukraine', 'great_britain', 'western_europe', 'southern_europe'], path: SVG_PATHS.northern_europe.path },
+  southern_europe: { name: 'Southern Europe', continent: 'europe', adjacent: ['ukraine', 'northern_europe', 'western_europe', 'north_africa', 'middle_east'], path: SVG_PATHS.southern_europe.path },
 
   // Africa (6 territories)
-  north_africa: { name: 'North Africa', continent: 'africa', adjacent: ['southern_europe', 'egypt', 'east_africa', 'congo', 'western_europe'], path: 'M350,220 L420,225 L430,280 L380,300 L320,270 Z' },
-  egypt: { name: 'Egypt', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'middle_east'], path: 'M420,225 L480,220 L490,270 L450,280 L430,280 Z' },
-  east_africa: { name: 'East Africa', continent: 'africa', adjacent: ['north_africa', 'egypt', 'congo', 'south_africa', 'madagascar'], path: 'M450,280 L510,275 L520,330 L480,350 L430,320 Z' },
-  congo: { name: 'Congo', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'south_africa'], path: 'M380,300 L430,320 L420,370 L370,360 Z' },
-  south_africa: { name: 'South Africa', continent: 'africa', adjacent: ['east_africa', 'congo', 'madagascar'], path: 'M420,370 L480,350 L490,410 L440,420 Z' },
-  madagascar: { name: 'Madagascar', continent: 'africa', adjacent: ['east_africa', 'south_africa'], path: 'M510,350 L540,340 L545,390 L520,400 Z' },
+  north_africa: { name: 'North Africa', continent: 'africa', adjacent: ['southern_europe', 'egypt', 'east_africa', 'congo', 'western_europe'], path: SVG_PATHS.north_africa.path },
+  egypt: { name: 'Egypt', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'middle_east'], path: SVG_PATHS.egypt.path },
+  east_africa: { name: 'East Africa', continent: 'africa', adjacent: ['north_africa', 'egypt', 'congo', 'south_africa', 'madagascar'], path: SVG_PATHS.east_africa.path },
+  congo: { name: 'Congo', continent: 'africa', adjacent: ['north_africa', 'east_africa', 'south_africa'], path: SVG_PATHS.congo.path },
+  south_africa: { name: 'South Africa', continent: 'africa', adjacent: ['east_africa', 'congo', 'madagascar'], path: SVG_PATHS.south_africa.path },
+  madagascar: { name: 'Madagascar', continent: 'africa', adjacent: ['east_africa', 'south_africa'], path: SVG_PATHS.madagascar.path },
 
   // Asia (12 territories)
-  middle_east: { name: 'Middle East', continent: 'asia', adjacent: ['ukraine', 'southern_europe', 'egypt', 'afghanistan', 'india'], path: 'M480,180 L550,175 L560,230 L520,250 L470,220 Z' },
-  afghanistan: { name: 'Afghanistan', continent: 'asia', adjacent: ['ukraine', 'middle_east', 'india', 'china', 'ural'], path: 'M550,175 L610,165 L620,210 L580,230 L560,230 Z' },
-  india: { name: 'India', continent: 'asia', adjacent: ['middle_east', 'afghanistan', 'china', 'siam'], path: 'M580,230 L640,220 L650,290 L610,310 L560,270 Z' },
-  china: { name: 'China', continent: 'asia', adjacent: ['afghanistan', 'india', 'siam', 'mongolia', 'ural', 'siberia'], path: 'M620,210 L700,200 L710,270 L660,290 L640,250 L620,210 Z' },
-  siam: { name: 'Siam', continent: 'asia', adjacent: ['india', 'china', 'indonesia'], path: 'M660,290 L720,280 L730,340 L690,350 L650,310 Z' },
-  mongolia: { name: 'Mongolia', continent: 'asia', adjacent: ['china', 'siberia', 'japan', 'irkutsk'], path: 'M700,150 L760,140 L770,190 L720,200 Z' },
-  japan: { name: 'Japan', continent: 'asia', adjacent: ['mongolia', 'kamchatka'], path: 'M780,180 L810,170 L815,210 L790,220 Z' },
-  kamchatka: { name: 'Kamchatka', continent: 'asia', adjacent: ['alaska', 'mongolia', 'japan', 'irkutsk'], path: 'M780,80 L840,70 L850,120 L810,130 L780,100 Z' },
-  siberia: { name: 'Siberia', continent: 'asia', adjacent: ['ural', 'china', 'mongolia', 'irkutsk'], path: 'M620,60 L720,50 L740,120 L700,150 L620,130 Z' },
-  ural: { name: 'Ural', continent: 'asia', adjacent: ['ukraine', 'afghanistan', 'china', 'siberia'], path: 'M520,120 L600,110 L610,160 L560,170 Z' },
-  yakutsk: { name: 'Yakutsk', continent: 'asia', adjacent: ['siberia', 'irkutsk', 'kamchatka', 'japan', 'mongolia'], path: 'M610,165 L660,160 L665,200 L620,205 Z' },
-  irkutsk: { name: 'Irkutsk', continent: 'asia', adjacent: ['siberia', 'yakutsk', 'kamchatka', 'mongolia', 'china'], path: 'M560,270 L590,265 L595,310 L570,315 Z' },
+  middle_east: { name: 'Middle East', continent: 'asia', adjacent: ['ukraine', 'southern_europe', 'egypt', 'afghanistan', 'india'], path: SVG_PATHS.middle_east.path },
+  afghanistan: { name: 'Afghanistan', continent: 'asia', adjacent: ['ukraine', 'middle_east', 'india', 'china', 'ural'], path: SVG_PATHS.afghanistan.path },
+  india: { name: 'India', continent: 'asia', adjacent: ['middle_east', 'afghanistan', 'china', 'siam'], path: SVG_PATHS.india.path },
+  china: { name: 'China', continent: 'asia', adjacent: ['afghanistan', 'india', 'siam', 'mongolia', 'ural', 'siberia'], path: SVG_PATHS.china.path },
+  siam: { name: 'Siam', continent: 'asia', adjacent: ['india', 'china', 'indonesia'], path: SVG_PATHS.siam.path },
+  mongolia: { name: 'Mongolia', continent: 'asia', adjacent: ['china', 'siberia', 'japan', 'irkutsk'], path: SVG_PATHS.mongolia.path },
+  japan: { name: 'Japan', continent: 'asia', adjacent: ['mongolia', 'kamchatka'], path: SVG_PATHS.japan.path },
+  kamchatka: { name: 'Kamchatka', continent: 'asia', adjacent: ['alaska', 'mongolia', 'japan', 'irkutsk'], path: SVG_PATHS.kamchatka.path },
+  siberia: { name: 'Siberia', continent: 'asia', adjacent: ['ural', 'china', 'mongolia', 'irkutsk'], path: SVG_PATHS.siberia.path },
+  ural: { name: 'Ural', continent: 'asia', adjacent: ['ukraine', 'afghanistan', 'china', 'siberia'], path: SVG_PATHS.ural.path },
+  yakutsk: { name: 'Yakutsk', continent: 'asia', adjacent: ['siberia', 'irkutsk', 'kamchatka', 'japan', 'mongolia'], path: SVG_PATHS.yakutsk.path },
+  irkutsk: { name: 'Irkutsk', continent: 'asia', adjacent: ['siberia', 'yakutsk', 'kamchatka', 'mongolia', 'china'], path: SVG_PATHS.irkutsk.path },
 
   // Oceania (4 territories)
-  indonesia: { name: 'Indonesia', continent: 'oceania', adjacent: ['siam', 'new_guinea', 'western_australia'], path: 'M700,350 L760,340 L770,390 L720,400 Z' },
-  new_guinea: { name: 'New Guinea', continent: 'oceania', adjacent: ['indonesia', 'western_australia'], path: 'M780,350 L830,340 L840,390 L800,400 Z' },
-  western_australia: { name: 'Western Australia', continent: 'oceania', adjacent: ['indonesia', 'new_guinea', 'eastern_australia'], path: 'M760,400 L830,390 L840,450 L780,460 Z' },
-  eastern_australia: { name: 'Eastern Australia', continent: 'oceania', adjacent: ['western_australia'], path: 'M850,450 L880,440 L885,480 L860,485 Z' }
+  indonesia: { name: 'Indonesia', continent: 'oceania', adjacent: ['siam', 'new_guinea', 'western_australia'], path: SVG_PATHS.indonesia.path },
+  new_guinea: { name: 'New Guinea', continent: 'oceania', adjacent: ['indonesia', 'western_australia'], path: SVG_PATHS.new_guinea.path },
+  western_australia: { name: 'Western Australia', continent: 'oceania', adjacent: ['indonesia', 'new_guinea', 'eastern_australia'], path: SVG_PATHS.western_australia.path },
+  eastern_australia: { name: 'Eastern Australia', continent: 'oceania', adjacent: ['western_australia'], path: SVG_PATHS.eastern_australia.path }
 };
 
 // === GAME STATE ===
